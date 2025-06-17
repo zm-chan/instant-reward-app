@@ -150,9 +150,12 @@ function Reward() {
   function handleOpenUploadModal() {
     setShowUploadModal(true);
   }
-  async function handleConfirmUploadModal() {
+  function handleConfirmUploadModal() {
     setShowUploadModal(false);
-    await mutate({ moneyAmount, eXPAmount, eXPLevel });
+    if (!navigator.onLine) {
+      return setSettingError(true);
+    }
+    mutate({ moneyAmount, eXPAmount, eXPLevel });
 
     // const updatedData = {
     //   moneyAmount: moneyAmount,
@@ -172,6 +175,9 @@ function Reward() {
   }
   function handleConfirmDownloadModal() {
     setShowDownloadModal(false);
+    if (!navigator.onLine) {
+      return setFetchingError(true);
+    }
     query();
   }
   function handleCancelDownloadModal() {
