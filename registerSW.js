@@ -1,0 +1,1 @@
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/instant-reward-app/sw.js', { scope: '/instant-reward-app/' })})}
