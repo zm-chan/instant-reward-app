@@ -1,0 +1,1 @@
+if('serviceWorker' in navigator) navigator.serviceWorker.register('/instant-reward-app/dev-sw.js?dev-sw', { scope: '/instant-reward-app/', type: 'classic' })
