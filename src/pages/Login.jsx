@@ -5,8 +5,6 @@ import { auth } from "../config/firebase";
 function Login() {
   const [error, setError] = useState("");
 
-  console.log(error);
-
   async function handleSubmit(event) {
     event.preventDefault();
     const formData = new FormData(event.target);

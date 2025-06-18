@@ -13,7 +13,7 @@ const pwaOptions = {
     globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
     runtimeCaching: [
       {
-        handler: "CacheFirst",
+        handler: "NetworkFirst",
         urlPattern: ({ url }) => {
           return url.pathname.startsWith("/");
         },
