@@ -15,6 +15,7 @@ const retrievedData = JSON.parse(localStorage.getItem("appData")) || {
   moneyAmount: 0,
   eXPAmount: 0,
   eXPLevel: 1,
+  dataAhead: false,
 };
 
 function Reward() {
@@ -26,7 +27,7 @@ function Reward() {
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const temperoraryAmountRef = useRef(0);
-  const [dataAhead, setDataAhead] = useState(false);
+  const [dataAhead, setDataAhead] = useState(retrievedData.dataAhead);
   const [showUploadRequiredModal, setShowUploadRequiredModal] = useState(false);
 
   const {
@@ -40,7 +41,13 @@ function Reward() {
       setMoneyAmount(data.moneyAmount);
       setEXPAmount(data.eXPAmount);
       setEXPLevel(data.eXPLevel);
-      localStorage.setItem("appData", JSON.stringify(data));
+      const updatedData = {
+        moneyAmount: data.moneyAmount,
+        eXPAmount: data.eXPAmount,
+        eXPLevel: data.eXPLevel,
+        dataAhead: false,
+      };
+      localStorage.setItem("appData", JSON.stringify(updatedData));
       setDataAhead(false);
     },
   });
@@ -95,56 +102,17 @@ function Reward() {
 
     setEXPAmount(updatedEXPAmount);
     setEXPLevel(currentLevel);
-
-    // let updatedEXPAmount = eXPAmount + Number(temperoraryAmountRef.current);
-    // let currentLevel = eXPLevel;
-    // let totalEXPForCurrentLevel = et currentLevel = eXPLevel;;
-
-    // if (updatedEXPAmount >= totalEXPForCurrentLevel) {
-    //   while (updatedEXPAmount >= totalEXPForCurrentLevel) {
-    //     updatedEXPAmount = updatedEXPAmount - totalEXPForCurrentLevel;
-    //     currentLevel++;
-    //     totalEXPForCurrentLevel = getTotalXPForLevel(currentLevel);
-    //   }
-    //   setEXPAmount(updatedEXPAmount);
-    //   setEXPLevel(currentLevel);
-    // } else if (updatedEXPAmount < 0) {
-    //   if (eXPLevel === 1) {
-    //     setEXPAmount(0);
-    //     setShowModal(false);
-    //     return;
-    //   }
-
-    //   while (updatedEXPAmount < 0) {
-    //     currentLevel--;
-    //     totalEXPForCurrentLevel = getTotalXPForLevel(currentLevel);
-    //     updatedEXPAmount = updatedEXPAmount + totalEXPForCurrentLevel;
-
-    //     if (currentLevel === 1 && updatedEXPAmount < 0) {
-    //       setEXPAmount(0);
-    //       setEXPLevel(1);
-    //       setShowModal(false);
-    //       return;
-    //     }
-    //   }
-
-    //   setEXPAmount(updatedEXPAmount);
-    //   setEXPLevel(currentLevel);
-    // } else {
-    //   setEXPAmount(updatedEXPAmount);
-    // }
     setShowAmountModal(false);
+    setDataAhead(true);
 
     const updatedData = {
       moneyAmount: moneyAmount,
       eXPAmount: eXPAmount,
       eXPLevel: eXPLevel,
+      dataAhead: true,
     };
 
-    // save to localstorage
     localStorage.setItem("appData", JSON.stringify(updatedData));
-
-    setDataAhead(true);
   }
 
   function handleCancelAmountModal() {
@@ -162,20 +130,11 @@ function Reward() {
       setDataAhead(true);
       localStorage.setItem(
         "appData",
-        JSON.stringify({ moneyAmount, eXPAmount, eXPLevel }),
+        JSON.stringify({ moneyAmount, eXPAmount, eXPLevel, dataAhead: true }),
       );
       return;
     }
     mutate({ moneyAmount, eXPAmount, eXPLevel });
-
-    // const updatedData = {
-    //   moneyAmount: moneyAmount,
-    //   eXPAmount: eXPAmount,
-    //   eXPLevel: eXPLevel,
-    // };
-
-    // // save to localstorage
-    // localStorage.setItem("appData", JSON.stringify(updatedData));
   }
   function handleCancelUploadModal() {
     setShowUploadModal(false);
