@@ -26,6 +26,8 @@ function Reward() {
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const temperoraryAmountRef = useRef(0);
+  const [dataAhead, setDataAhead] = useState(false);
+  const [showUploadRequiredModal, setShowUploadRequiredModal] = useState(false);
 
   const {
     isLoading: isFetchingLoading,
@@ -39,6 +41,7 @@ function Reward() {
       setEXPAmount(data.eXPAmount);
       setEXPLevel(data.eXPLevel);
       localStorage.setItem("appData", JSON.stringify(data));
+      setDataAhead(false);
     },
   });
 
@@ -140,6 +143,8 @@ function Reward() {
 
     // save to localstorage
     localStorage.setItem("appData", JSON.stringify(updatedData));
+
+    setDataAhead(true);
   }
 
   function handleCancelAmountModal() {
@@ -153,7 +158,13 @@ function Reward() {
   function handleConfirmUploadModal() {
     setShowUploadModal(false);
     if (!navigator.onLine) {
-      return setSettingError(true);
+      setSettingError(true);
+      setDataAhead(true);
+      localStorage.setItem(
+        "appData",
+        JSON.stringify({ moneyAmount, eXPAmount, eXPLevel }),
+      );
+      return;
     }
     mutate({ moneyAmount, eXPAmount, eXPLevel });
 
@@ -171,13 +182,17 @@ function Reward() {
   }
 
   function handleOpenDownloadModal() {
+    if (dataAhead) {
+      return setShowUploadRequiredModal(true);
+    }
+
     setShowDownloadModal(true);
   }
   function handleConfirmDownloadModal() {
     setShowDownloadModal(false);
-    if (!navigator.onLine) {
-      return setFetchingError(true);
-    }
+    // if (!navigator.onLine) {
+    //   return setFetchingError(true);
+    // }
     query();
   }
   function handleCancelDownloadModal() {
@@ -214,10 +229,13 @@ function Reward() {
             <div className="flex flex-wrap items-center justify-center gap-2 xs:mt-2 lg:ms-auto lg:gap-4">
               <button
                 onClick={handleOpenUploadModal}
-                className="flex items-center gap-2 rounded-md bg-stone-700 px-2 py-1 xs:text-lg lg:text-xl"
+                className="relative flex items-center gap-2 rounded-md bg-stone-700 px-2 py-1 xs:text-lg lg:text-xl"
               >
                 <span>Upload</span>
                 <CloudUpload />
+                {dataAhead && (
+                  <span className="absolute -top-1 -right-1 size-3 rounded-full bg-amber-700"></span>
+                )}
               </button>
               <button
                 onClick={handleOpenDownloadModal}
@@ -294,6 +312,12 @@ function Reward() {
         <ErrorModal
           errorMessage="Something Went Wrong With Setting!"
           setError={setSettingError}
+        />
+      )}
+      {showUploadRequiredModal && (
+        <ErrorModal
+          errorMessage="You Have To Upload Data First!"
+          setError={setShowUploadRequiredModal}
         />
       )}
       {showAmountModal ? (
