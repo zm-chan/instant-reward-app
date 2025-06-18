@@ -78,9 +78,10 @@ function Reward() {
   }
 
   function handleConfirmAmountModal() {
-    setMoneyAmount((prevMoneyAmount) => {
-      return prevMoneyAmount + Number(temperoraryAmountRef.current);
-    });
+    const updatedMoneyAmount =
+      moneyAmount + Number(temperoraryAmountRef.current);
+
+    setMoneyAmount(updatedMoneyAmount);
 
     let updatedEXPAmount = eXPAmount + Number(temperoraryAmountRef.current);
     let currentLevel = eXPLevel;
@@ -106,9 +107,9 @@ function Reward() {
     setDataAhead(true);
 
     const updatedData = {
-      moneyAmount: moneyAmount,
-      eXPAmount: eXPAmount,
-      eXPLevel: eXPLevel,
+      moneyAmount: updatedMoneyAmount,
+      eXPAmount: updatedEXPAmount,
+      eXPLevel: currentLevel,
       dataAhead: true,
     };
 
@@ -127,11 +128,6 @@ function Reward() {
     setShowUploadModal(false);
     if (!navigator.onLine) {
       setSettingError(true);
-      setDataAhead(true);
-      localStorage.setItem(
-        "appData",
-        JSON.stringify({ moneyAmount, eXPAmount, eXPLevel, dataAhead: true }),
-      );
       return;
     }
     mutate({ moneyAmount, eXPAmount, eXPLevel });
