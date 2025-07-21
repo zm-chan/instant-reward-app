@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import useFetchDoc from "../hooks/useFetchDoc";
 import { getData, setData } from "../services/apiFirebase";
 import useSetDoc from "../hooks/useSetDoc";
-import { getTotalXPForLevel, moneyRanges } from "../util";
+import { getTotalXPForLevel, moneyRanges, calculateEXPAndLevel } from "../util";
 import { CloudDownload, CloudUpload, LogOut } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "../config/firebase";
@@ -13,10 +13,15 @@ import LoadingIndicator from "../components/LoadingIndicator";
 
 const retrievedData = JSON.parse(localStorage.getItem("appData")) || {
   moneyAmount: 0,
-  eXPAmount: 0,
-  eXPLevel: 1,
   dataAhead: false,
 };
+
+const { eXPAmountCalculate, eXPLevelCalculate } = calculateEXPAndLevel(
+  retrievedData.moneyAmount,
+);
+
+retrievedData.eXPAmount = eXPAmountCalculate;
+retrievedData.eXPLevel = eXPLevelCalculate;
 
 function Reward() {
   const [moneyAmount, setMoneyAmount] = useState(retrievedData.moneyAmount);
@@ -39,12 +44,15 @@ function Reward() {
     queryFn: getData,
     onSuccess: (data) => {
       setMoneyAmount(data.moneyAmount);
-      setEXPAmount(data.eXPAmount);
-      setEXPLevel(data.eXPLevel);
+
+      const { eXPAmountCalculate, eXPLevelCalculate } = calculateEXPAndLevel(
+        data.moneyAmount,
+      );
+
+      setEXPAmount(eXPAmountCalculate);
+      setEXPLevel(eXPLevelCalculate);
       const updatedData = {
         moneyAmount: data.moneyAmount,
-        eXPAmount: data.eXPAmount,
-        eXPLevel: data.eXPLevel,
         dataAhead: false,
       };
       localStorage.setItem("appData", JSON.stringify(updatedData));
@@ -108,8 +116,6 @@ function Reward() {
 
     const updatedData = {
       moneyAmount: updatedMoneyAmount,
-      eXPAmount: updatedEXPAmount,
-      eXPLevel: currentLevel,
       dataAhead: true,
     };
 
@@ -130,7 +136,7 @@ function Reward() {
       setSettingError(true);
       return;
     }
-    mutate({ moneyAmount, eXPAmount, eXPLevel });
+    mutate({ moneyAmount });
   }
   function handleCancelUploadModal() {
     setShowUploadModal(false);
@@ -145,9 +151,6 @@ function Reward() {
   }
   function handleConfirmDownloadModal() {
     setShowDownloadModal(false);
-    // if (!navigator.onLine) {
-    //   return setFetchingError(true);
-    // }
     query();
   }
   function handleCancelDownloadModal() {
