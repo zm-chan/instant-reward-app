@@ -13,11 +13,13 @@ import LoadingIndicator from "../components/LoadingIndicator";
 
 const retrievedData = JSON.parse(localStorage.getItem("appData")) || {
   moneyAmount: 0,
+  exponent: 1.05,
   dataAhead: false,
 };
 
 const { eXPAmountCalculate, eXPLevelCalculate } = calculateEXPAndLevel(
   retrievedData.moneyAmount,
+  retrievedData.exponent,
 );
 
 retrievedData.eXPAmount = eXPAmountCalculate;
@@ -27,6 +29,7 @@ function Reward() {
   const [moneyAmount, setMoneyAmount] = useState(retrievedData.moneyAmount);
   const [eXPAmount, setEXPAmount] = useState(retrievedData.eXPAmount);
   const [eXPLevel, setEXPLevel] = useState(retrievedData.eXPLevel);
+  const inputRef = useRef();
   const [showAmountModal, setShowAmountModal] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showDownloadModal, setShowDownloadModal] = useState(false);
@@ -34,6 +37,10 @@ function Reward() {
   const temperoraryAmountRef = useRef(0);
   const [dataAhead, setDataAhead] = useState(retrievedData.dataAhead);
   const [showUploadRequiredModal, setShowUploadRequiredModal] = useState(false);
+
+  const numberExponent = inputRef?.current?.value
+    ? Number(inputRef?.current?.value)
+    : retrievedData.exponent;
 
   const {
     isLoading: isFetchingLoading,
@@ -47,12 +54,14 @@ function Reward() {
 
       const { eXPAmountCalculate, eXPLevelCalculate } = calculateEXPAndLevel(
         data.moneyAmount,
+        data.exponent,
       );
 
       setEXPAmount(eXPAmountCalculate);
       setEXPLevel(eXPLevelCalculate);
       const updatedData = {
         moneyAmount: data.moneyAmount,
+        exponent: data.exponent,
         dataAhead: false,
       };
       localStorage.setItem("appData", JSON.stringify(updatedData));
@@ -75,7 +84,7 @@ function Reward() {
     currency: "USD",
   }).format(moneyAmount);
 
-  const totalEXP = getTotalXPForLevel(eXPLevel);
+  const totalEXP = getTotalXPForLevel(eXPLevel, numberExponent);
 
   const progressBarPercentage = Math.trunc((eXPAmount / totalEXP) * 100);
 
@@ -94,19 +103,11 @@ function Reward() {
     let updatedEXPAmount = eXPAmount + Number(temperoraryAmountRef.current);
     let currentLevel = eXPLevel;
 
-    while (updatedEXPAmount >= getTotalXPForLevel(currentLevel)) {
-      updatedEXPAmount -= getTotalXPForLevel(currentLevel);
+    while (
+      updatedEXPAmount >= getTotalXPForLevel(currentLevel, numberExponent)
+    ) {
+      updatedEXPAmount -= getTotalXPForLevel(currentLevel, numberExponent);
       currentLevel++;
-    }
-
-    while (updatedEXPAmount < 0 && currentLevel > 1) {
-      currentLevel--;
-      updatedEXPAmount += getTotalXPForLevel(currentLevel);
-    }
-
-    if (currentLevel === 1 && updatedEXPAmount < 0) {
-      currentLevel = 1;
-      updatedEXPAmount = 0;
     }
 
     setEXPAmount(updatedEXPAmount);
@@ -116,6 +117,7 @@ function Reward() {
 
     const updatedData = {
       moneyAmount: updatedMoneyAmount,
+      exponent: numberExponent,
       dataAhead: true,
     };
 
@@ -136,7 +138,7 @@ function Reward() {
       setSettingError(true);
       return;
     }
-    mutate({ moneyAmount });
+    mutate({ moneyAmount, exponent: numberExponent });
   }
   function handleCancelUploadModal() {
     setShowUploadModal(false);
@@ -166,6 +168,31 @@ function Reward() {
   }
   function handleCancelLogoutModal() {
     setShowLogoutModal(false);
+  }
+
+  function handleExponentValue() {
+    const extractedExponentValue = Number(inputRef.current.value);
+
+    const finalStringExponentValue =
+      extractedExponentValue < 1 || Number.isNaN(extractedExponentValue)
+        ? "1"
+        : inputRef.current.value;
+
+    const { eXPAmountCalculate, eXPLevelCalculate } = calculateEXPAndLevel(
+      moneyAmount,
+      Number(finalStringExponentValue),
+    );
+
+    setEXPAmount(eXPAmountCalculate);
+    setEXPLevel(eXPLevelCalculate);
+
+    const updatedData = {
+      moneyAmount: moneyAmount,
+      exponent: Number(finalStringExponentValue),
+      dataAhead: false,
+    };
+
+    localStorage.setItem("appData", JSON.stringify(updatedData));
   }
 
   return (
@@ -223,6 +250,24 @@ function Reward() {
               <span>{eXPAmount}</span>/<span>{totalEXP}</span>
             </p>
           </section>
+          <section className="mt-8 space-x-3 text-lg font-bold xs:text-xl lg:mt-10 lg:text-2xl">
+            <label htmlFor="exponent" className="">
+              Exponent:
+            </label>
+            <input
+              ref={inputRef}
+              type="text"
+              defaultValue={retrievedData.exponent}
+              id="exponent"
+              className="max-w-1/9 rounded-md border-2 border-stone-600 px-4 py-2 transition outline-none focus:border-yellow-700"
+            />
+            <button
+              className="min-w-[80px] rounded-xl bg-stone-700 px-4 py-2 xs:min-w-[100px]"
+              onClick={handleExponentValue}
+            >
+              Change
+            </button>
+          </section>
           <section className="mt-8 lg:mt-10">
             <h2 className="text-lg font-bold xs:text-xl lg:text-2xl">
               Did Good Thing
@@ -236,22 +281,6 @@ function Reward() {
                     onClick={() => handleOpenAmountModal(range)}
                   >
                     +{range}
-                  </button>
-                );
-              })}
-            </article>
-          </section>
-          <section className="mt-8 lg:mt-10">
-            <h2 className="text-lg font-bold lg:text-2xl">Did Bad Thing</h2>
-            <article className="mt-4 flex flex-wrap gap-x-6 gap-y-4 xs:text-xl md:gap-x-3 lg:gap-x-8 lg:text-2xl">
-              {moneyRanges.map((range) => {
-                return (
-                  <button
-                    key={range + "minus"}
-                    className="min-w-[80px] rounded-xl bg-stone-700 px-4 py-2 xs:min-w-[100px]"
-                    onClick={() => handleOpenAmountModal(-range)}
-                  >
-                    -{range}
                   </button>
                 );
               })}
