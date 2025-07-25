@@ -250,8 +250,11 @@ function Reward() {
               <span>{eXPAmount}</span>/<span>{totalEXP}</span>
             </p>
           </section>
-          <section className="mt-8 space-x-3 text-lg font-bold xs:text-xl lg:mt-10 lg:text-2xl">
-            <label htmlFor="exponent" className="">
+          <section className="mt-8 space-x-3 text-lg xs:text-xl lg:mt-10 lg:text-2xl">
+            <label
+              htmlFor="exponent"
+              className="mb-4 block font-bold min-[384px]:inline"
+            >
               Exponent:
             </label>
             <input
@@ -259,7 +262,7 @@ function Reward() {
               type="text"
               defaultValue={retrievedData.exponent}
               id="exponent"
-              className="max-w-1/9 rounded-md border-2 border-stone-600 px-4 py-2 transition outline-none focus:border-yellow-700"
+              className="max-w-1/4 rounded-md border-2 border-stone-600 px-4 py-2 font-bold transition outline-none focus:border-yellow-700 md:max-w-1/9"
             />
             <button
               className="min-w-[80px] rounded-xl bg-stone-700 px-4 py-2 xs:min-w-[100px]"
@@ -270,7 +273,7 @@ function Reward() {
           </section>
           <section className="mt-8 lg:mt-10">
             <h2 className="text-lg font-bold xs:text-xl lg:text-2xl">
-              Did Good Thing
+              Action's Value
             </h2>
             <article className="mt-4 flex flex-wrap gap-x-6 gap-y-4 xs:text-xl md:gap-x-3 lg:gap-x-8 lg:text-2xl">
               {moneyRanges.map((range) => {
@@ -280,7 +283,7 @@ function Reward() {
                     className="min-w-[80px] rounded-xl bg-stone-700 px-4 py-2 xs:min-w-[100px]"
                     onClick={() => handleOpenAmountModal(range)}
                   >
-                    +{range}
+                    {range}
                   </button>
                 );
               })}
